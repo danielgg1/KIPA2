@@ -123,8 +123,10 @@ choice("1") :-
     % give recommendation.
     case(Advice),
     write("\e[2J"),
-    format("The system advices you with the following message: ~w.", Advice),
-    
+    writeln("The system advices you with the following message:"),
+    nl,
+    format("~w", Advice),
+    clearvariables,
     !.
 
 
@@ -220,5 +222,16 @@ question :-
     atom_number(Input, Number),
     assertz(earlierwarnings(Number)),
     assertz(asked(earlierwarnings)).
+
+clearvariables :-
+    retractall(asked(_)),
+    retractall(file(_)),
+    retractall(enoughmaterialpresent(_)),
+    retractall(type(_)),
+    retractall(earlierbehavior(_)),
+    retractall(violence(_)),
+    retractall(severe(_)),
+    retractall(earlierwarnings(_)).
+
 
 :- menu.
