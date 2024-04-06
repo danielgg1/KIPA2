@@ -103,6 +103,8 @@ case("This task is not suitable.") :-
 %% Replace all occurrences of this predicate with write("\e[2J")
 
 menu :-
+    % Predicate for generating the welcome menu.
+
     repeat,
     nl,
     writeln("Welcome to the knowledge system. Enter what you want me to do."),
@@ -131,6 +133,7 @@ choice("1") :-
 
 
 choice("0") :-
+    % User wants to exit the system.
     writeln("Thank you for using the system. Bye!").
 
 
@@ -224,6 +227,8 @@ question :-
     assertz(asked(earlierwarnings)).
 
 clearvariables :-
+    % Clear all variables to prepare for a new system run.
+
     retractall(asked(_)),
     retractall(file(_)),
     retractall(enoughmaterialpresent(_)),
