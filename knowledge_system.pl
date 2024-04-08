@@ -21,33 +21,50 @@ earlierwarnings(x): Amount of earlier warnings the employee has had.
 
 currentquestion(1).
 
-
 %%%%%%%%%%%%%%%%%% Mapping (letterlijk uit het koffie voorbeeld)
 % Var 1: file
 map(file, "1", yes).
 map(file, "0", no).
+map(file, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 % Var 2: enoughmaterialpresent
 map(enoughmaterialpresent, "1", yes).
 map(enoughmaterialpresent, "0", no).
+map(enoughmaterialpresent, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 % Var 3: type
 map(type, "1", complaint).
 map(type, "2", warning).
 map(type, "3", improvementprocedure).
 map(type, "0", somethingelse).
+map(type, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 % Var 4: earlierbehavior
 map(earlierbehavior, "1", yes).
 map(earlierbehavior, "0", no).
+map(earlierbehavior, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 % Var 5: violence
 map(violence, "1", yes).
 map(violence, "0", no).
+map(violence, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 % Var 6: severe
 map(severe, "1", yes).
 map(severe, "0", no).
+map(severe, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
 
 %%%%%%%%%%%%% Knowledge Rules
 
@@ -98,7 +115,7 @@ case("You are advised to begin a mediation procedure") :-
     type(improvementprocedure).
 
 % Rule 10
-case("This task is not suitable.") :-
+case("This task is not suitable for you as a juridical advisor. You are advised to redirect it to one of your colleagues.") :-
     type(somethingelse).
 
 
@@ -128,7 +145,6 @@ choice("1") :-
     currentquestion(QNumber),
     question(QNumber, Answer),
     nextquestion(QNumber, Answer, NewQNumber),
-    format("~w", Answer),
     retract(currentquestion(QNumber)),
     asserta(currentquestion(NewQNumber)),
     
@@ -150,7 +166,7 @@ choice("0") :-
 
 % Question order predicates
 % predicate: nextquestion(currentquestion, answer, nextquestion).
-% if the question arrives at a conclusion, the 'nextquestion' will be 'finished'.
+% if the question with answer x arrives at a conclusion, the 'nextquestion' will be 'finished'.
 
 nextquestion(1, yes, 2).
 nextquestion(1, no, finished).
@@ -161,6 +177,7 @@ nextquestion(2, no, finished).
 nextquestion(3, complaint, 4).
 nextquestion(3, warning, 6).
 nextquestion(3, improvementprocedure, finished).
+nextquestion(3, somethingelse, finished).
 
 nextquestion(4, yes, finished).
 nextquestion(4, no, 5).
@@ -173,21 +190,12 @@ nextquestion(6, no, 7).
 
 nextquestion(7, _, finished).
 
-/*
-1, yes -> 2; no -> klaar)
-2, yes -> 3; no -> klaar)
-3, complaint -> 4; warning -> 6; improvement procedure -> klaar
-4, yes -> klaar; no -> 5
-5, yes -> klaar; no -> klaar
-6, yes -> klaar; no -> 7
-7, < 3 -> klaar; >= 3, klaar 
-*/
-
 
 % Questions  (order can be altered.)
 
 question(1, Answer) :-
     % Question 1 about file.
+    repeat,
 
     \+asked(file),
     writeln("Does the case include a file?"),
@@ -196,10 +204,12 @@ question(1, Answer) :-
     read_line_to_string(user_input, Input),
     map(file, Input, Answer),
     assertz(file(Answer)),
-    assertz(asked(file)).
+    assertz(asked(file)),
+    !.
 
 question(2, Answer) :-
     % Question 2 about enoughmaterialpresent.
+    repeat,
 
     \+asked(enoughmaterialpresent),
     writeln("Is there enough material present to take legal action?"),
@@ -208,11 +218,13 @@ question(2, Answer) :-
     read_line_to_string(user_input, Input),
     map(enoughmaterialpresent, Input, Answer),
     assertz(enoughmaterialpresent(Answer)),
-    assertz(asked(enoughmaterialpresent)).
+    assertz(asked(enoughmaterialpresent)),
+    !.
 
 
 question(3, Answer) :- 
     % Question 3 about type.
+    repeat,
 
     \+asked(type),
     writeln("What is the type of case?"),
@@ -223,23 +235,27 @@ question(3, Answer) :-
     read_line_to_string(user_input, Input),
     map(type, Input, Answer),
     assertz(type(Answer)),
-    assertz(asked(type)).
+    assertz(asked(type)),
+    !.
 
 
 question(4, Answer) :-
     % Question 4 about earlierbehavior.
+    repeat,
 
     \+asked(earlierbehavior),
-    writeln("Has the employee has problematic behavior earlier in his/her career at Municipality Amsterdam?"),
+    writeln("Has the employee had problematic behavior earlier in his/her career at Municipality Amsterdam?"),
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
     map(earlierbehavior, Input, Answer),
     assertz(earlierbehavior(Answer)),
-    assertz(asked(earlierbehavior)).
+    assertz(asked(earlierbehavior)),
+    !.
 
 question(5, Answer) :-
     % Question 5 about violence.
+    repeat,
 
     \+asked(violence),
     writeln("Is the complaint about violence on the workplace?"),
@@ -248,10 +264,12 @@ question(5, Answer) :-
     read_line_to_string(user_input, Input),
     map(violence, Input, Answer),
     assertz(violence(Answer)),
-    assertz(asked(violence)).
+    assertz(asked(violence)),
+    !.
 
 question(6, Answer) :-
     % Question 6 about severe.
+    repeat,
 
     \+asked(severe),
     writeln("Is the warning severe?"),
@@ -260,18 +278,21 @@ question(6, Answer) :-
     read_line_to_string(user_input, Input),
     map(severe, Input, Answer),
     assertz(severe(Answer)),
-    assertz(asked(severe)).
+    assertz(asked(severe)),
+    !.
 
 question(7, Answer) :-
     % Question 7 about earlierwarnings.
+    repeat,
 
     \+asked(earlierwarnings),
     writeln("How many warnings has the employee had already?"),
-    writeln("Please enter a number."),
+    writeln("Please only enter a number."),
     read_line_to_string(user_input, Input),
     atom_number(Input, Answer),
     assertz(earlierwarnings(Answer)),
-    assertz(asked(earlierwarnings)).
+    assertz(asked(earlierwarnings)),
+    !.
 
 clearvariables :-
     % Clear all variables to prepare for a new system run.
