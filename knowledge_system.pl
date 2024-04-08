@@ -9,6 +9,7 @@ severe(x): If a warning is severe.
 earlierwarnings(x): Amount of earlier warnings the employee has had.
 */
 
+% Declare dynamic predicates for user input / keeping tracked of asked questions and current questions.
 :- dynamic asked/1.
 :- dynamic file/1.
 :- dynamic enoughmaterialpresent/1.
@@ -19,9 +20,13 @@ earlierwarnings(x): Amount of earlier warnings the employee has had.
 :- dynamic earlierwarnings/1.
 :- dynamic currentquestion/1.
 
+% The first question to ask is question number 1.
 currentquestion(1).
 
-%%%%%%%%%%%%%%%%%% Mapping (letterlijk uit het koffie voorbeeld)
+%%%%%%%%%%%%%%%%%% Mapping functions, map choice to value.
+% If the answer is invalid, the user is notified about invalid input.
+% 'fail' predicate causes backtracking so question is asked again
+
 % Var 1: file
 map(file, "1", yes).
 map(file, "0", no).
@@ -65,6 +70,7 @@ map(severe, "0", no).
 map(severe, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
+
 
 %%%%%%%%%%%%% Knowledge Rules
 
@@ -120,26 +126,23 @@ case("This task is not suitable for you as a juridical advisor. You are advised 
 
 
 %%%%%%%%%%%%%% UI.
-%% Note for Windows users: the predicate tty_clear (clear the screen) is not supported on Windows.
-%% Replace all occurrences of this predicate with write("\e[2J")
+% Windows users: the predicate tty_clear (clear the screen) is not supported on Windows.
+% Replace all occurrences of this predicate with write("\e[2J")
 
 menu :-
-    % Predicate for generating the welcome menu.
+    % Generate the welcome menu.
 
     repeat,
     nl,
     writeln("Welcome to the knowledge system. Enter what you want me to do."),
     writeln("1. Suggest advice for a new case."),
-
-    % Option 2: Clear preferences?
-
     writeln("0. Exit"),
     read_line_to_string(user_input, Choice),
     choice(Choice),
     Choice == "0".
 
 choice("1") :-
-    % ask questions.
+    % Ask questions and try to determine an answer.
 
     repeat,
     currentquestion(QNumber),
@@ -149,24 +152,25 @@ choice("1") :-
     asserta(currentquestion(NewQNumber)),
     
 
-    % give recommendation.
+    % Give recommendation if possible.
     case(Advice),
     write("\e[2J"),
     writeln("The system advices you with the following message:"),
     nl,
     format("~w", Advice),
+    nl,
     clearvariables,
     !.
 
 
 choice("0") :-
     % User wants to exit the system.
+
     writeln("Thank you for using the system. Bye!").
 
 
-% Question order predicates
-% predicate: nextquestion(currentquestion, answer, nextquestion).
-% if the question with answer x arrives at a conclusion, the 'nextquestion' will be 'finished'.
+%%%%%%%%%%%%%%%%%%% Question- and question order predicates
+% predicate 'nextquestion' is used to determine the next question based on the answer given.
 
 nextquestion(1, yes, 2).
 nextquestion(1, no, finished).
@@ -191,7 +195,7 @@ nextquestion(6, no, 7).
 nextquestion(7, _, finished).
 
 
-% Questions  (order can be altered.)
+% Questions
 
 question(1, Answer) :-
     % Question 1 about file.
@@ -294,6 +298,7 @@ question(7, Answer) :-
     assertz(asked(earlierwarnings)),
     !.
 
+
 clearvariables :-
     % Clear all variables to prepare for a new system run.
 
@@ -309,5 +314,5 @@ clearvariables :-
     retractall(severe(_)),
     retractall(earlierwarnings(_)).
 
-
+% Call the menu predicate to generate the welcome menu at start of system run.
 :- menu.
