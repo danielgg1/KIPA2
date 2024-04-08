@@ -3,8 +3,7 @@ KIPA opdracht 2 knowledge system.
 
 # Todo: 
 - explainability
-- checken of de gebruiker niet een antwoord geeft die niet in de opties ziet
-- volgorde van vragen, zodat de gestelde vragen afhankelijk zijn van de antwoorden.
+- checken of de gebruiker niet een antwoord geeft die niet in de opties ziet.
 
 # Fact types:
 file(x): If the case includes a file.

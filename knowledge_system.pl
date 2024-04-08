@@ -17,6 +17,10 @@ earlierwarnings(x): Amount of earlier warnings the employee has had.
 :- dynamic violence/1.
 :- dynamic severe/1.
 :- dynamic earlierwarnings/1.
+:- dynamic currentquestion/1.
+
+currentquestion(1).
+
 
 %%%%%%%%%%%%%%%%%% Mapping (letterlijk uit het koffie voorbeeld)
 % Var 1: file
@@ -119,8 +123,15 @@ menu :-
 
 choice("1") :-
     % ask questions.
+
     repeat,
-    question,
+    currentquestion(QNumber),
+    question(QNumber, Answer),
+    nextquestion(QNumber, Answer, NewQNumber),
+    format("~w", Answer),
+    retract(currentquestion(QNumber)),
+    asserta(currentquestion(NewQNumber)),
+    
 
     % give recommendation.
     case(Advice),
@@ -137,9 +148,45 @@ choice("0") :-
     writeln("Thank you for using the system. Bye!").
 
 
-% Questions in order (order can be altered.)
+% Question order predicates
+% predicate: nextquestion(currentquestion, answer, nextquestion).
+% if the question arrives at a conclusion, the 'nextquestion' will be 'finished'.
 
-question :-
+nextquestion(1, yes, 2).
+nextquestion(1, no, finished).
+
+nextquestion(2, yes, 3).
+nextquestion(2, no, finished).
+
+nextquestion(3, complaint, 4).
+nextquestion(3, warning, 6).
+nextquestion(3, improvementprocedure, finished).
+
+nextquestion(4, yes, finished).
+nextquestion(4, no, 5).
+
+nextquestion(5, yes, finished).
+nextquestion(5, no, finished).
+
+nextquestion(6, yes, finished).
+nextquestion(6, no, 7).
+
+nextquestion(7, _, finished).
+
+/*
+1, yes -> 2; no -> klaar)
+2, yes -> 3; no -> klaar)
+3, complaint -> 4; warning -> 6; improvement procedure -> klaar
+4, yes -> klaar; no -> 5
+5, yes -> klaar; no -> klaar
+6, yes -> klaar; no -> 7
+7, < 3 -> klaar; >= 3, klaar 
+*/
+
+
+% Questions  (order can be altered.)
+
+question(1, Answer) :-
     % Question 1 about file.
 
     \+asked(file),
@@ -147,11 +194,11 @@ question :-
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
-    map(file, Input, F),
-    assertz(file(F)),
+    map(file, Input, Answer),
+    assertz(file(Answer)),
     assertz(asked(file)).
 
-question :-
+question(2, Answer) :-
     % Question 2 about enoughmaterialpresent.
 
     \+asked(enoughmaterialpresent),
@@ -159,12 +206,12 @@ question :-
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
-    map(enoughmaterialpresent, Input, E),
-    assertz(enoughmaterialpresent(E)),
+    map(enoughmaterialpresent, Input, Answer),
+    assertz(enoughmaterialpresent(Answer)),
     assertz(asked(enoughmaterialpresent)).
 
 
-question :- 
+question(3, Answer) :- 
     % Question 3 about type.
 
     \+asked(type),
@@ -174,12 +221,12 @@ question :-
     writeln("3. Improvement procedure."),
     writeln("0. Something else than above."),
     read_line_to_string(user_input, Input),
-    map(type, Input, T),
-    assertz(type(T)),
+    map(type, Input, Answer),
+    assertz(type(Answer)),
     assertz(asked(type)).
 
 
-question :-
+question(4, Answer) :-
     % Question 4 about earlierbehavior.
 
     \+asked(earlierbehavior),
@@ -187,11 +234,11 @@ question :-
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
-    map(earlierbehavior, Input, E),
-    assertz(earlierbehavior(E)),
+    map(earlierbehavior, Input, Answer),
+    assertz(earlierbehavior(Answer)),
     assertz(asked(earlierbehavior)).
 
-question :-
+question(5, Answer) :-
     % Question 5 about violence.
 
     \+asked(violence),
@@ -199,11 +246,11 @@ question :-
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
-    map(violence, Input, V),
-    assertz(violence(V)),
+    map(violence, Input, Answer),
+    assertz(violence(Answer)),
     assertz(asked(violence)).
 
-question :-
+question(6, Answer) :-
     % Question 6 about severe.
 
     \+asked(severe),
@@ -211,23 +258,26 @@ question :-
     writeln("1. Yes."),
     writeln("0. No."),
     read_line_to_string(user_input, Input),
-    map(severe, Input, S),
-    assertz(severe(S)),
+    map(severe, Input, Answer),
+    assertz(severe(Answer)),
     assertz(asked(severe)).
 
-question :-
+question(7, Answer) :-
     % Question 7 about earlierwarnings.
 
     \+asked(earlierwarnings),
     writeln("How many warnings has the employee had already?"),
     writeln("Please enter a number."),
     read_line_to_string(user_input, Input),
-    atom_number(Input, Number),
-    assertz(earlierwarnings(Number)),
+    atom_number(Input, Answer),
+    assertz(earlierwarnings(Answer)),
     assertz(asked(earlierwarnings)).
 
 clearvariables :-
     % Clear all variables to prepare for a new system run.
+
+    retractall(currentquestion(_)),
+    asserta(currentquestion(1)),
 
     retractall(asked(_)),
     retractall(file(_)),
