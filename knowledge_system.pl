@@ -160,6 +160,8 @@ choice("1") :-
     format("~w", Advice),
     nl,
     clearvariables,
+
+    % commitment operator: go back to menu when conclusion is reached.
     !.
 
 
@@ -167,6 +169,11 @@ choice("0") :-
     % User wants to exit the system.
 
     writeln("Thank you for using the system. Bye!").
+
+choice(_) :-
+    % The user has entered invalid input in the menu.
+    write("\e[2J"),
+    writeln("Please enter only one of the given choices: 1 or 0.").
 
 
 %%%%%%%%%%%%%%%%%%% Question- and question order predicates
