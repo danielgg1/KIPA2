@@ -7,6 +7,7 @@ earlierbehavior(x): If the employee has shown earlier problematic behaviour.
 violence(x): If complaint is about violence on the workplace.
 severe(x): If a warning is severe.
 earlierwarnings(x): Amount of earlier warnings the employee has had.
+
 */
 
 % Declare dynamic predicates for user input / keeping tracked of asked questions and current questions.
@@ -27,62 +28,79 @@ currentquestion(1).
 % If the answer is invalid, the user is notified about invalid input.
 % 'fail' predicate causes backtracking so question is asked again
 
-% Var 1: file
-map(file, "1", yes).
-map(file, "0", no).
-map(file, _, invalid) :- 
-    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
-    fail.
-
-% Var 2: enoughmaterialpresent
-map(enoughmaterialpresent, "1", yes).
-map(enoughmaterialpresent, "0", no).
-map(enoughmaterialpresent, _, invalid) :- 
-    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
-    fail.
-
-% Var 3: type
+% Var 1: type
 map(type, "1", complaint).
 map(type, "2", warning).
 map(type, "3", improvementprocedure).
+map(type, "4", agreementofdismissal).
 map(type, "0", somethingelse).
 map(type, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 4: earlierbehavior
+% Var 2: earlierbehavior
 map(earlierbehavior, "1", yes).
 map(earlierbehavior, "0", no).
 map(earlierbehavior, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 5: violence
+% Var 3: violence
 map(violence, "1", yes).
 map(violence, "0", no).
 map(violence, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 6: severe
+% Var 4: severe
 map(severe, "1", yes).
 map(severe, "0", no).
 map(severe, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
+% Var 5: occupationaldisability
+map(occupationaldisability, "1", yes).
+map(occupationaldisability, "0", no).
+map(occupationaldisability, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
+
+% Var 5: evidencefiring
+map(evidencefiring, "1", yes).
+map(evidencefiring, "0", no).
+map(evidencefiring, _, invalid) :- 
+    writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
+    fail.
+
+% Var 6: monthsabsent
+map(monthsabsent, Number, yes) :-
+    Number > 2.
+map(monthsabsent, Number, no) :-
+    Number < 3.
 
 %%%%%%%%%%%%% Knowledge Rules
 
-% Rule 1
-case("You are advised to ask for more info") :- 
-    file(no).
 
-% Rule 2
-case("You are advised to ask for more info") :-
-    enoughmaterialpresent(no).
+case("You are advised to fire the employee without compensation of transition.") :-
+    type(agreementofdismissal),
+    monthsabsent > 2.
 
-% Rule 3
+case("You are advised to give the employee maximum compensation of transition.") :-
+    type(agreementofdismissal),
+    monthsabsent(no),
+    occupationaldisability(yes).
+
+case("You are advised to give the employee maximum compensation of transition") :-
+    type(agreementofdismissal),
+    monthsabsent(yes),
+    evidencefiring(no).
+
+case("You are advised to give the employee no compensation of transition") :-
+    type(agreementofdismissal),
+    evidencefiring(yes).
+
+
 case("You are advised to go to court") :-
     type(complaint),
     earlierbehavior(yes).
@@ -139,6 +157,7 @@ menu :-
     writeln("0. Exit"),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Choice),
+    nl,
     choice(Choice),
     Choice == "0".
 
@@ -180,63 +199,36 @@ choice(_) :-
 %%%%%%%%%%%%%%%%%%% Question- and question order predicates
 % predicate 'nextquestion' is used to determine the next question based on the answer given.
 
-nextquestion(1, yes, 2).
-nextquestion(1, no, finished).
 
-nextquestion(2, yes, 3).
-nextquestion(2, no, finished).
 
-nextquestion(3, complaint, 4).
-nextquestion(3, warning, 6).
-nextquestion(3, improvementprocedure, finished).
-nextquestion(3, somethingelse, finished).
+nextquestion(1, complaint, 2).
+nextquestion(1, warning, 4).
+nextquestion(1, agreementofdismissal, 6).
+nextquestion(1, improvementprocedure, finished).
+nextquestion(1, somethingelse, finished).
+
+nextquestion(2, yes, finished).
+nextquestion(2, no, 3).
+
+nextquestion(3, yes, finished).
+nextquestion(3, no, finished).
 
 nextquestion(4, yes, finished).
 nextquestion(4, no, 5).
 
-nextquestion(5, yes, finished).
-nextquestion(5, no, finished).
+nextquestion(5, _, finished).
 
 nextquestion(6, yes, finished).
 nextquestion(6, no, 7).
 
-nextquestion(7, _, finished).
+nextquestion(7, yes, finished).
+nextquestion(7, no, 8).
 
+nextquestion(8, _, finished).
 
 % Questions
 
-question(1, Answer) :-
-    % Question 1 about file.
-    repeat,
-
-    \+asked(file),
-    writeln("Does the case include a file?"),
-    writeln("1. Yes."),
-    writeln("0. No."),
-    writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
-    read_line_to_string(user_input, Input),
-    map(file, Input, Answer),
-    assertz(file(Answer)),
-    assertz(asked(file)),
-    !.
-
-question(2, Answer) :-
-    % Question 2 about enoughmaterialpresent.
-    repeat,
-
-    \+asked(enoughmaterialpresent),
-    writeln("Is there enough material present to take legal action?"),
-    writeln("1. Yes."),
-    writeln("0. No."),
-    writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
-    read_line_to_string(user_input, Input),
-    map(enoughmaterialpresent, Input, Answer),
-    assertz(enoughmaterialpresent(Answer)),
-    assertz(asked(enoughmaterialpresent)),
-    !.
-
-
-question(3, Answer) :- 
+question(1, Answer) :- 
     % Question 3 about type.
     repeat,
 
@@ -245,16 +237,18 @@ question(3, Answer) :-
     writeln("1. Complaint."),
     writeln("2. Warning."),
     writeln("3. Improvement procedure."),
+    writeln("4. Agreement of dismissal."),
     writeln("0. Something else than above."),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
+    nl,
     map(type, Input, Answer),
     assertz(type(Answer)),
     assertz(asked(type)),
     !.
 
 
-question(4, Answer) :-
+question(2, Answer) :-
     % Question 4 about earlierbehavior.
     repeat,
 
@@ -264,12 +258,13 @@ question(4, Answer) :-
     writeln("0. No."),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
+    nl,
     map(earlierbehavior, Input, Answer),
     assertz(earlierbehavior(Answer)),
     assertz(asked(earlierbehavior)),
     !.
 
-question(5, Answer) :-
+question(3, Answer) :-
     % Question 5 about violence.
     repeat,
 
@@ -279,12 +274,13 @@ question(5, Answer) :-
     writeln("0. No."),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
+    nl,
     map(violence, Input, Answer),
     assertz(violence(Answer)),
     assertz(asked(violence)),
     !.
 
-question(6, Answer) :-
+question(4, Answer) :-
     % Question 6 about severe.
     repeat,
 
@@ -294,12 +290,13 @@ question(6, Answer) :-
     writeln("0. No."),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
+    nl,
     map(severe, Input, Answer),
     assertz(severe(Answer)),
     assertz(asked(severe)),
     !.
 
-question(7, Answer) :-
+question(5, Answer) :-
     % Question 7 about earlierwarnings.
     repeat,
 
@@ -308,10 +305,60 @@ question(7, Answer) :-
     writeln("Please only enter a number."),
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
+    nl,
     atom_number(Input, Answer),
     assertz(earlierwarnings(Answer)),
     assertz(asked(earlierwarnings)),
     !.
+
+question(6, Answer) :-
+    % Question 8 about occupationaldisability.
+    repeat,
+
+    \+asked(occupationaldisability),
+    writeln("Does the employee have an occupational disability?"),
+    writeln("1. Yes."),
+    writeln("0. No."),
+    writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
+    read_line_to_string(user_input, Input),
+    nl,
+    map(occupationaldisability, Input, Answer),
+    assertz(occupationaldisability(Answer)),
+    assertz(asked(occupationaldisability)),
+    !.
+
+question(7, Answer) :- 
+    % Question 9 about monthsabsent.
+    repeat,
+
+    \+asked(monthsabsent),
+    writeln("How many months has the employee been absent?"),
+    writeln("Please only enter a number."),
+    writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
+    read_line_to_string(user_input, Input),
+    nl,
+    atom_number(Input, Number),
+    map(monthsabsent, Number, Answer),
+    assertz(monthsabsent(Answer)),
+    assertz(asked(monthsabsent)),
+    !.
+
+question(8, Answer) :- 
+    % Question 10 about evidencefiring.
+    repeat,
+
+    \+asked(evidencefiring),
+    writeln("Is there enough juridical evidence to fire the employee?"),
+    writeln("1. Yes."),
+    writeln("0. No."),
+    writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
+    read_line_to_string(user_input, Input),
+    nl,
+    map(evidencefiring, Input, Answer),
+    assertz(evidencefiring(Answer)),
+    assertz(asked(evidencefiring)),
+    !.
+
 
 
 clearvariables :-
