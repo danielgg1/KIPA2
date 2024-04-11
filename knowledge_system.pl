@@ -1,15 +1,3 @@
-/*
-Fact types:
-file(x): If the case includes a file.
-enoughmaterialpresent(x): If the required materials to take legal action are all present
-type(x): The type of case (complaint, warning, improvement procedure.)
-earlierbehavior(x): If the employee has shown earlier problematic behaviour.
-violence(x): If complaint is about violence on the workplace.
-severe(x): If a warning is severe.
-earlierwarnings(x): Amount of earlier warnings the employee has had.
-
-*/
-
 % Declare dynamic predicates for user input / keeping tracked of asked questions and current questions.
 :- dynamic asked/1.
 :- dynamic file/1.
@@ -20,6 +8,9 @@ earlierwarnings(x): Amount of earlier warnings the employee has had.
 :- dynamic severe/1.
 :- dynamic earlierwarnings/1.
 :- dynamic currentquestion/1.
+:- dynamic occupationaldisability/1.
+:- dynamic evidencefiring/1.
+:- dynamic monthsabsent/1.
 
 % The first question to ask is question number 1.
 currentquestion(1).
@@ -84,11 +75,10 @@ map(monthsabsent, Number, no) :-
 
 case("You are advised to fire the employee without compensation of transition.") :-
     type(agreementofdismissal),
-    monthsabsent > 2.
+    monthsabsent(yes).
 
 case("You are advised to give the employee maximum compensation of transition.") :-
     type(agreementofdismissal),
-    monthsabsent(no),
     occupationaldisability(yes).
 
 case("You are advised to give the employee maximum compensation of transition") :-
@@ -229,7 +219,7 @@ nextquestion(8, _, finished).
 % Questions
 
 question(1, Answer) :- 
-    % Question 3 about type.
+    % Question 1 about type.
     repeat,
 
     \+asked(type),
@@ -249,7 +239,7 @@ question(1, Answer) :-
 
 
 question(2, Answer) :-
-    % Question 4 about earlierbehavior.
+    % Question 2 about earlierbehavior.
     repeat,
 
     \+asked(earlierbehavior),
@@ -265,7 +255,7 @@ question(2, Answer) :-
     !.
 
 question(3, Answer) :-
-    % Question 5 about violence.
+    % Question 3 about violence.
     repeat,
 
     \+asked(violence),
@@ -281,7 +271,7 @@ question(3, Answer) :-
     !.
 
 question(4, Answer) :-
-    % Question 6 about severe.
+    % Question 4 about severe.
     repeat,
 
     \+asked(severe),
@@ -297,7 +287,7 @@ question(4, Answer) :-
     !.
 
 question(5, Answer) :-
-    % Question 7 about earlierwarnings.
+    % Question 5 about earlierwarnings.
     repeat,
 
     \+asked(earlierwarnings),
@@ -312,7 +302,7 @@ question(5, Answer) :-
     !.
 
 question(6, Answer) :-
-    % Question 8 about occupationaldisability.
+    % Question 6 about occupationaldisability.
     repeat,
 
     \+asked(occupationaldisability),
@@ -328,7 +318,7 @@ question(6, Answer) :-
     !.
 
 question(7, Answer) :- 
-    % Question 9 about monthsabsent.
+    % Question 7 about monthsabsent.
     repeat,
 
     \+asked(monthsabsent),
@@ -344,7 +334,7 @@ question(7, Answer) :-
     !.
 
 question(8, Answer) :- 
-    % Question 10 about evidencefiring.
+    % Question 8 about evidencefiring.
     repeat,
 
     \+asked(evidencefiring),
@@ -374,7 +364,10 @@ clearvariables :-
     retractall(earlierbehavior(_)),
     retractall(violence(_)),
     retractall(severe(_)),
-    retractall(earlierwarnings(_)).
+    retractall(earlierwarnings(_)),
+    retractall(occupationaldisability(_)),
+    retractall(monthsabsent(_)),
+    retractall(evidencefiring(_)).
 
 % Call the menu predicate to generate the welcome menu at start of system run.
 :- menu.
