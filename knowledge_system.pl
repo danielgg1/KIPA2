@@ -15,6 +15,7 @@
 % The first question to ask is question number 1.
 currentquestion(1).
 
+
 %%%%%%%%%%%%%%%%%% Mapping functions, map choice to value.
 % If the answer is invalid, the user is notified about invalid input.
 % 'fail' predicate causes backtracking so question is asked again
@@ -50,25 +51,37 @@ map(severe, _, invalid) :-
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 5: occupationaldisability
+% Var 5: earlierwarnings
+map(earlierwarnings, Number, yes) :-
+    Number > 2.
+map(earlierwarnings, Number, no) :-
+    Number < 3.
+map(earlierwarnings, _, invalid) :- 
+    writeln("Invalid input. Please only type in a number (e.g. '1')."),
+    fail.
+
+% Var 6: occupationaldisability
 map(occupationaldisability, "1", yes).
 map(occupationaldisability, "0", no).
 map(occupationaldisability, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 5: evidencefiring
+% Var 7: evidencefiring
 map(evidencefiring, "1", yes).
 map(evidencefiring, "0", no).
 map(evidencefiring, _, invalid) :- 
     writeln("Invalid input. Please only type in one of the specific numbers (e.g. '1')."),
     fail.
 
-% Var 6: monthsabsent
+% Var 8: monthsabsent
 map(monthsabsent, Number, yes) :-
-    Number > 2.
+    Number >= 3.
 map(monthsabsent, Number, no) :-
     Number < 3.
+map(monthsabsent, _, invalid) :- 
+    writeln("Invalid input. Please only type in a number (e.g. '1')."),
+    fail.
 
 %%%%%%%%%%%%% Knowledge Rules
 
@@ -116,15 +129,13 @@ case("You are advised to fire the employee") :-
 % Rule 9
 case("You are advised to give the employee salary suspension") :-
     type(warning),
-    earlierwarnings(X),
-    X >= 3.
+    earlierwarnings(yes).
 
 % Rule 10
 case("You are advised to send the employee a warning letter") :-
     type(warning),
     severe(no),
-    earlierwarnings(X),
-    X < 3.
+    earlierwarnings(no).
 
 % Rule 11
 case("You are advised to begin a mediation procedure") :-
@@ -177,7 +188,6 @@ choice("1") :-
     % commitment operator: go back to menu when conclusion is reached.
     !.
 
-
 choice("0") :-
     % User wants to exit the system.
 
@@ -189,8 +199,8 @@ choice(_) :-
     writeln("Please enter only one of the given choices: 1 or 0.").
 
 
-%%%%%%%%%%%%%%%%%%% Question- and question order predicates
-% predicate 'nextquestion' is used to determine the next question that should be asked, based on the answer given on the previous question.
+%%%%%%%%%%%%%%%%%%% Question order predicates
+% The predicate 'nextquestion' is used to determine the next question that should be asked, based on the answer given on the previous question.
 
 nextquestion(1, complaint, 2).
 nextquestion(1, warning, 4).
@@ -217,7 +227,7 @@ nextquestion(7, no, 8).
 
 nextquestion(8, _, finished).
 
-% Questions
+%%%%%%%%%%%%%%%% Question predicates
 
 question(1, Answer) :- 
     % Question 1 about type.
@@ -237,7 +247,6 @@ question(1, Answer) :-
     assertz(type(Answer)),
     assertz(asked(type)),
     !.
-
 
 question(2, Answer) :-
     % Question 2 about earlierbehavior.
@@ -297,7 +306,8 @@ question(5, Answer) :-
     writeln("Please write your answer as just a single number, e.g. '1' or '0'. After entering the number, please hit enter."),
     read_line_to_string(user_input, Input),
     nl,
-    atom_number(Input, Answer),
+    atom_number(Input, Number),
+    map(earlierwarnings, Number, Answer),
     assertz(earlierwarnings(Answer)),
     assertz(asked(earlierwarnings)),
     !.
@@ -351,7 +361,6 @@ question(8, Answer) :-
     !.
 
 
-
 clearvariables :-
     % Clear all variables to prepare for a new system run.
 
@@ -369,6 +378,7 @@ clearvariables :-
     retractall(occupationaldisability(_)),
     retractall(monthsabsent(_)),
     retractall(evidencefiring(_)).
+
 
 % Call the menu predicate to generate the welcome menu at start of system run.
 :- menu.
