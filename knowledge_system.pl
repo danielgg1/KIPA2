@@ -72,63 +72,65 @@ map(monthsabsent, Number, no) :-
 
 %%%%%%%%%%%%% Knowledge Rules
 
-
+% Rule 1
 case("You are advised to fire the employee without compensation of transition.") :-
     type(agreementofdismissal),
     monthsabsent(yes).
 
+% Rule 2
 case("You are advised to give the employee maximum compensation of transition.") :-
     type(agreementofdismissal),
     occupationaldisability(yes).
 
+% Rule 3
 case("You are advised to give the employee maximum compensation of transition") :-
     type(agreementofdismissal),
-    monthsabsent(yes),
     evidencefiring(no).
 
+% Rule 4
 case("You are advised to give the employee no compensation of transition") :-
     type(agreementofdismissal),
     evidencefiring(yes).
 
-
+% Rule 5
 case("You are advised to go to court") :-
     type(complaint),
     earlierbehavior(yes).
 
-% Rule 4
+% Rule 6
 case("You are advised to go to court") :-
     type(complaint),
     violence(yes).
 
-% Rule 5
+% Rule 7
 case("You are advised to begin a mediation procedure") :-
     type(complaint),
     violence(no),
     earlierbehavior(no).
 
-% Rule 6
+% Rule 8
 case("You are advised to fire the employee") :-
     type(warning),
     severe(yes).
 
-% Rule 7
+% Rule 9
 case("You are advised to give the employee salary suspension") :-
     type(warning),
     earlierwarnings(X),
     X >= 3.
 
-% Rule 8
+% Rule 10
 case("You are advised to send the employee a warning letter") :-
     type(warning),
     severe(no),
     earlierwarnings(X),
     X < 3.
 
-% Rule 9
+% Rule 11
 case("You are advised to begin a mediation procedure") :-
     type(improvementprocedure).
 
-% Rule 10
+% Domain rule
 case("This task is not suitable for you as a juridical advisor. You are advised to redirect it to one of your colleagues.") :-
     type(somethingelse).
 
@@ -154,6 +156,7 @@ menu :-
 choice("1") :-
     % Ask questions and try to determine an answer.
 
+    % Set backtrack target whenever the system fails in giving advice.
     repeat,
     currentquestion(QNumber),
     question(QNumber, Answer),
@@ -187,9 +190,7 @@ choice(_) :-
 
 
 %%%%%%%%%%%%%%%%%%% Question- and question order predicates
-% predicate 'nextquestion' is used to determine the next question based on the answer given.
-
-
+% predicate 'nextquestion' is used to determine the next question that should be asked, based on the answer given on the previous question.
 
 nextquestion(1, complaint, 2).
 nextquestion(1, warning, 4).
