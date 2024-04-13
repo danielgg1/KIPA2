@@ -53,7 +53,7 @@ map(severe, _, invalid) :-
 
 % Var 5: earlierwarnings
 map(earlierwarnings, Number, yes) :-
-    Number > 2.
+    Number >= 3.
 map(earlierwarnings, Number, no) :-
     Number < 3.
 map(earlierwarnings, _, invalid) :- 
@@ -96,49 +96,47 @@ case("You are advised to give the employee maximum compensation of transition.")
     occupationaldisability(yes).
 
 % Rule 3
-case("You are advised to give the employee maximum compensation of transition") :-
+case("You are advised to give the employee maximum compensation of transition.") :-
     type(agreementofdismissal),
     evidencefiring(no).
 
 % Rule 4
-case("You are advised to give the employee no compensation of transition") :-
+case("You are advised to give the employee no compensation of transition.") :-
     type(agreementofdismissal),
     evidencefiring(yes).
 
 % Rule 5
-case("You are advised to go to court") :-
+case("You are advised to go to court.") :-
     type(complaint),
     earlierbehavior(yes).
 
 % Rule 6
-case("You are advised to go to court") :-
+case("You are advised to go to court.") :-
     type(complaint),
     violence(yes).
 
 % Rule 7
-case("You are advised to begin a mediation procedure") :-
+case("You are advised to begin a mediation procedure.") :-
     type(complaint),
-    violence(no),
-    earlierbehavior(no).
+    violence(no).
 
 % Rule 8
-case("You are advised to fire the employee") :-
+case("You are advised to fire the employee.") :-
     type(warning),
     severe(yes).
 
 % Rule 9
-case("You are advised to give the employee salary suspension") :-
+case("You are advised to give the employee salary suspension.") :-
     type(warning),
     earlierwarnings(yes).
 
 % Rule 10
-case("You are advised to send the employee a warning letter") :-
+case("You are advised to send the employee a warning letter.") :-
     type(warning),
-    severe(no),
     earlierwarnings(no).
 
 % Rule 11
-case("You are advised to begin a mediation procedure") :-
+case("You are advised to begin a mediation procedure.") :-
     type(improvementprocedure).
 
 % Domain rule
